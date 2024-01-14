@@ -8,19 +8,8 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
-
-func filterIPv4(addrs []net.IP) []string {
-	var ipv4Addrs []string
-	for _, ip := range addrs {
-		if strings.Contains(ip.String(), ".") {
-			ipv4Addrs = append(ipv4Addrs, ip.String())
-		}
-	}
-	return ipv4Addrs
-}
 
 // サイズ制限付きダウンローダー
 type limitedReader struct {
@@ -42,14 +31,6 @@ func (lr *limitedReader) Read(p []byte) (int, error) {
 
 func (lr *limitedReader) Close() error {
 	return lr.rc.Close()
-}
-
-type SecurityError struct {
-	Message string
-}
-
-func (se *SecurityError) Error() string {
-	return se.Message
 }
 
 type SecureRequest struct {
