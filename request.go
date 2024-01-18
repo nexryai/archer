@@ -3,7 +3,6 @@ package archer
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -60,7 +59,6 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 		if i != nil {
 			connectTo = i
 		} else {
-			fmt.Println(targetUrl.Hostname())
 			ips, resolveErr := net.ResolveIPAddr("ip", targetUrl.Hostname())
 			if resolveErr != nil {
 				return nil, errors.New("failed to resolve hostname")
