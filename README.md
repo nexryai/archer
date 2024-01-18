@@ -7,6 +7,7 @@ req, err := http.NewRequest("GET", "https://google.com", nil)
 if err != nil {
 	log.Fatal(err)
 }
+
 SecureRequestService := archer.SecureRequest{
 	Request: req,
 	TimeOut: 10,
