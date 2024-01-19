@@ -49,8 +49,8 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 	dialer := &net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
-		// DualStack: true, // this is deprecated as of go 1.16
 	}
+
 	// or create your own transport, there's an example on godoc.
 	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 		var connectTo net.IP
@@ -90,6 +90,10 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 	resp, err := client.Do(sr.Request)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.Header.Get("Blocked-By") == "NextDNS" {
+		return nil, errors.New("blocked by NextDNS")
 	}
 
 	// ファイルサイズが制限を超えているかチェック
