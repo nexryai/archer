@@ -40,9 +40,9 @@ func (lr *limitedReader) Close() error {
 
 // SecureRequest is a struct that holds a request, timeout, and max size.
 type SecureRequest struct {
-	Request *http.Request
-	TimeOut int64
-	MaxSize int64
+	Request     *http.Request
+	TimeoutSecs int64
+	MaxSize     int64
 }
 
 // Send sends the request and returns the response. Before sending the request, it checks if the URL is safe from SSRF attacks.
@@ -55,7 +55,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 	}
 
 	dialer := &net.Dialer{
-		Timeout:   30 * time.Second,
+		Timeout:   time.Duration(sr.TimeoutSecs) * time.Second,
 		KeepAlive: 30 * time.Second,
 	}
 
@@ -90,7 +90,9 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 	}
 
 	// リクエストを作成
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Duration(sr.TimeoutSecs) * time.Second,
+	}
 
 	// リクエストを送信
 	resp, err := client.Do(sr.Request)
