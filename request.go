@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	ErrPrivateAddress = errors.New("private address detected. aborting request")
-	ErrUnsafeUrl      = errors.New("unsafe URL detected. request is blocked")
-	ErrBlockedByDNS   = errors.New("blocked by DNS service")
+	ErrPrivateAddressDetected = errors.New("private address detected. aborting request")
+	ErrUnsafeUrlDetected      = errors.New("unsafe URL detected. request is blocked")
+	ErrBlockedByDNS           = errors.New("blocked by DNS service")
 )
 
 // サイズ制限付きリーダー
@@ -51,7 +51,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 
 	// safeなURLかチェック
 	if !IsSafeUrl(targetUrl.String()) {
-		return nil, ErrUnsafeUrl
+		return nil, ErrUnsafeUrlDetected
 	}
 
 	dialer := &net.Dialer{
@@ -76,7 +76,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 		}
 
 		if isPrivateAddress(connectTo.String()) {
-			return nil, ErrPrivateAddress
+			return nil, ErrPrivateAddressDetected
 		}
 
 		_, port, err := net.SplitHostPort(addr)
