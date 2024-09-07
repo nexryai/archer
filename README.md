@@ -21,7 +21,7 @@ func main() {
 
 	SecureRequestService := archer.SecureRequest{
 		Request: req,
-		TimeOut: 10,
+		TimeoutSecs: 10,
 		MaxSize: 1024 * 1024 * 10,
 	}
 
