@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+var (
+	ErrPrivateAddress = errors.New("private address detected. aborting request")
+	ErrUnsafeUrl      = errors.New("unsafe URL detected. request is blocked")
+	ErrBlockedByDNS   = errors.New("blocked by DNS service")
+)
+
 // サイズ制限付きリーダー
 type limitedReader struct {
 	rc io.ReadCloser
@@ -32,18 +38,20 @@ func (lr *limitedReader) Close() error {
 	return lr.rc.Close()
 }
 
+// SecureRequest is a struct that holds a request, timeout, and max size.
 type SecureRequest struct {
 	Request *http.Request
 	TimeOut int64
 	MaxSize int64
 }
 
+// Send sends the request and returns the response. Before sending the request, it checks if the URL is safe from SSRF attacks.
 func (sr *SecureRequest) Send() (*http.Response, error) {
 	targetUrl := sr.Request.URL
 
-	// sageなURLかチェック
+	// safeなURLかチェック
 	if !IsSafeUrl(targetUrl.String()) {
-		return nil, errors.New("unsafe URL, download aborted")
+		return nil, ErrUnsafeUrl
 	}
 
 	dialer := &net.Dialer{
@@ -51,7 +59,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 		KeepAlive: 30 * time.Second,
 	}
 
-	// or create your own transport, there's an example on godoc.
+	// Create custom transport that checks if the IP address is private
 	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 		var connectTo net.IP
 
@@ -68,7 +76,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 		}
 
 		if isPrivateAddress(connectTo.String()) {
-			return nil, errors.New("private address, download aborted")
+			return nil, ErrPrivateAddress
 		}
 
 		_, port, err := net.SplitHostPort(addr)
@@ -82,9 +90,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 	}
 
 	// リクエストを作成
-	client := &http.Client{
-		//Transport: transport,
-	}
+	client := &http.Client{}
 
 	// リクエストを送信
 	resp, err := client.Do(sr.Request)
@@ -93,7 +99,7 @@ func (sr *SecureRequest) Send() (*http.Response, error) {
 	}
 
 	if resp.Header.Get("Blocked-By") == "NextDNS" {
-		return nil, errors.New("blocked by NextDNS")
+		return nil, ErrBlockedByDNS
 	}
 
 	// ファイルサイズが制限を超えているかチェック
