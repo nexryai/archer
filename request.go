@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// サイズ制限付きダウンローダー
+// サイズ制限付きリーダー
 type limitedReader struct {
 	rc io.ReadCloser
 	n  int64
