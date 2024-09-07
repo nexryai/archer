@@ -20,13 +20,13 @@ func isPrivateAddress(address string) bool {
 		return true
 	}
 
-	if ip != nil && (ip.IsLoopback() ||
+	if ip.IsLoopback() ||
 		ip.IsPrivate() ||
 		ip.IsMulticast() ||
 		ip.IsLinkLocalUnicast() ||
 		ip.IsLoopback() ||
 		ip.IsUnspecified() ||
-		!ip.IsGlobalUnicast()) {
+		!ip.IsGlobalUnicast() {
 		return true
 	}
 
